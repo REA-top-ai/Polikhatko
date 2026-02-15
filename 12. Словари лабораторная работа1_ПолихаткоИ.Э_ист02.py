@@ -1,0 +1,70 @@
+# 12. Словари лабораторная работа 1
+# задание 1
+# # 1)
+# sensors = {"living room": 21, "kitchen": 23, "bedroom": 20}
+# sensors["pantry"] = 22
+# print(sensors)
+# # 2)
+# num_cameras = {"backyard": 6, "garage": 2, "driveway": 1}
+# print(num_cameras)
+
+# Задание 2
+# translations = {
+#     "mountain": "orod",
+#     "bread": "bass",
+#     "friend": "mellon",
+#     "horse": "roch"}
+
+# Задание 3
+# # 1)
+# animals_in_zoo = {}
+# # 2)
+# animals_in_zoo["zebras"] = 8
+# # 3)
+# animals_in_zoo["monkeys"] = 12
+# # 4)
+# animals_in_zoo["dinosaurs"] = 0
+# # 5)
+# print(animals_in_zoo)
+
+# Задание 4
+# user_ids = {"teraCoder": 9018293, "proProgrammer": 119238}
+# user_ids.update({"theLooper": 138475, "stringQueen": 85739})
+# print(user_ids)
+
+# Задание 5
+# oscar_winners = {
+#     "Best Picture": "La La Land",
+#     "Best Actor": "Casey Affleck",
+#     "Best Actress": "Emma Stone",
+#     "Animated Feature": "Zootopia"
+# }
+# oscar_winners["Supporting Actress"] = "Viola Davis"
+# oscar_winners["Best Picture"] = "Moonlight"
+# print(oscar_winners)
+
+# Задание 6
+# drinks = ["espresso", "chai", "decaf", "drip"]
+# caffeine = [64, 40, 0, 120]
+# zipped_drinks = zip(drinks, caffeine)
+# drinks_to_caffeine = {drink: cafval for drink, cafval in zipped_drinks}
+# print(drinks_to_caffeine)
+
+# Задание 7
+# 1)
+songs = ["Like a Rolling Stone", "Satisfaction", "Imagine", "What's Going On", "Respect", "Good Vibrations"]
+playcounts = [78, 29, 44, 21, 89, 5]
+# 2)
+plays = {song: playcount for song, playcount in zip(songs, playcounts)}
+print(plays)
+# 3)
+plays["Purple Haze"] = 1
+# 4)
+plays["Respect"] += 5
+# 5)
+library = {
+    "The Best Songs": plays,
+    "Sunday Feelings": {}
+}
+# 6)
+print(library)
