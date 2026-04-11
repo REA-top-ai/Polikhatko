@@ -1,70 +1,115 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import StandardScaler
+import requests
+import json
+from datetime import datetime, timedelta
 
-# Пример данных о дронах (можно заменить на реальные данные)
-data = {
-    'Масса (кг)': [1.2, 3.5, 0.8, 5.0, 2.1, 4.0, 1.5, 6.0, 0.5, 7.0],
-    'Дальность полета (км)': [5, 20, 2, 50, 10, 30, 7, 100, 1, 150],
-    'Скорость полета (км/ч)': [40, 60, 30, 80, 50, 70, 45, 90, 25, 100],
-    'Время полета (мин)': [30, 45, 20, 60, 35, 50, 40, 90, 15, 120],
-    'Грузоподъемность (кг)': [0.5, 2.0, 0.2, 5.0, 1.0, 3.0, 0.8, 10.0, 0.1, 15.0],
-    'Применение': ['Разведка', 'Доставка', 'Разведка', 'Военный', 'Наблюдение', 'Доставка', 'Наблюдение', 'Военный',
-                   'Разведка', 'Военный']
-}
+# ======================
+# КЛЮЧИ (ВСТАВЬ СВОИ)
+# ======================
 
-# Создаем DataFrame
-df = pd.DataFrame(data)
+NEWS_API_KEY = "d71e0c92715d481581ba0e4a4344b2c1"
+MISTRAL_API_KEY = "ZbqJhMWw3vg7qvvhfvYTh8hJDLRaMkRH"
 
-# Разделяем данные на признаки (X) и целевую переменную (y)
-X = df.drop('Применение', axis=1)
-y = df['Применение']
-
-# Разделяем данные на обучающую и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Масштабируем данные
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Обучаем модель (Random Forest)
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train_scaled, y_train)
-
-# Предсказываем на тестовых данных
-y_pred = model.predict(X_test_scaled)
-
-# Оцениваем точность
-accuracy = accuracy_score(y_test, y_pred)
-print(f'Точность модели: {accuracy:.2f}')
+TOPIC = "artificial intelligence ethics OR AI regulation OR AI safety"
+DAYS_BACK = 1
+MAX_ARTICLES = 10
 
 
-# Функция для классификации нового дрона
-def classify_drone():
-    print("\nВведите параметры дрона для классификации:")
-    mass = float(input("Масса (кг): "))
-    distance = float(input("Дальность полета (км): "))
-    speed = float(input("Скорость полета (км/ч): "))
-    flight_time = float(input("Время полета (мин): "))
-    payload = float(input("Грузоподъемность (кг): "))
 
-    # Создаем DataFrame для нового дрона
-    new_drone = pd.DataFrame([[mass, distance, speed, flight_time, payload]],
-                             columns=['Масса (кг)', 'Дальность полета (км)', 'Скорость полета (км/ч)',
-                                      'Время полета (мин)', 'Грузоподъемность (кг)'])
+# 1. ПОЛУЧ СТАТЕЙ
+def fetch_articles():
+    url = "https://newsapi.org/v2/everything"
 
-    # Масштабируем данные
-    new_drone_scaled = scaler.transform(new_drone)
+    params = {
+        "q": "technology OR AI OR software",
+        "language": "en",
+        "sortBy": "relevancy",
+        "pageSize": MAX_ARTICLES,
+        "apiKey": NEWS_API_KEY
+    }
 
-    # Предсказываем класс
-    prediction = model.predict(new_drone_scaled)
-    print(f"\nРекомендуемое применение дрона: {prediction[0]}")
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    print("DEBUG RESPONSE:", data)
+
+    return data.get("articles", [])
 
 
-# Пример использования
+
+
+
+# 2. АНАЛИЗ ЧЕРЕЗ MISTRAL
+
+def generate_summary(articles):
+    url = "https://api.mistral.ai/v1/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    articles_text = "\n\n".join([
+        f"{a.get('title', '')}. {a.get('description', '')}"
+        for a in articles
+    ])
+
+    prompt = f"""
+Ты аналитик новостей.
+Напиши аналитическую аннотацию на русском языке по следующим статьям.
+
+Требования:
+- 250–300 слов
+- без списков
+- аналитический стиль
+- оцени, что произошло за последние сутки
+
+Статьи:
+{articles_text}
+"""
+
+    data = {
+        "model": "mistral-small-latest",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    result = response.json()
+
+    return result["choices"][0]["message"]["content"]
+
+
+
+# 3. ЗАПУСК ПРОГИ
+
+def main():
+    print("Получаем статьи...")
+
+    articles = fetch_articles()
+
+    if not articles:
+        print("Нет статей")
+        return
+
+    print("Статей найдено:", len(articles))
+
+    print("Отправляем в Mistral...")
+
+    summary = generate_summary(articles)
+
+    print("\n===== АННОТАЦИЯ =====\n")
+    print(summary)
+
+    with open("text.txt", "w", encoding="utf-8") as f:
+        f.write(summary)
+
+    print("\nГотово: текст сохранён в text.txt")
+
+
 if __name__ == "__main__":
-    classify_drone()
+    main()
+
+
+
