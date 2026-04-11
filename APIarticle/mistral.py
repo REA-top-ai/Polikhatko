@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 NEWS_API_KEY = "d71e0c92715d481581ba0e4a4344b2c1"
 MISTRAL_API_KEY = "ZbqJhMWw3vg7qvvhfvYTh8hJDLRaMkRH"
 
-TOPIC = "artificial intelligence ethics OR AI regulation OR AI safety"
+TOPIC = "artificial intelligence ethics OR AI regulation OR AI safety" #эт тема
 DAYS_BACK = 1
 MAX_ARTICLES = 10
 
@@ -15,16 +15,17 @@ MAX_ARTICLES = 10
 # 1. ПОЛУЧ СТАТЕЙ
 def fetch_articles():
     url = "https://newsapi.org/v2/everything"
-
+    #пр запр к апи
     params = {
-        "q": "technology OR AI OR software",
+        "q": "technology OR AI OR software", #поиск
         "language": "en",
         "sortBy": "relevancy",
-        "pageSize": MAX_ARTICLES,
+        "pageSize": MAX_ARTICLES, #скок вернуть
         "apiKey": NEWS_API_KEY
     }
 
     response = requests.get(url, params=params)
+    #преобраз в յսօն
     data = response.json()
 
     print("DEBUG RESPONSE:", data)
@@ -36,7 +37,6 @@ def fetch_articles():
 
 
 # 2. АНАЛИЗ ЧЕРЕЗ MISTRAL
-
 def generate_summary(articles):
     url = "https://api.mistral.ai/v1/chat/completions"
 
@@ -44,7 +44,7 @@ def generate_summary(articles):
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
         "Content-Type": "application/json"
     }
-
+    #заголовки итд
     articles_text = "\n\n".join([
         f"{a.get('title', '')}. {a.get('description', '')}"
         for a in articles
@@ -107,6 +107,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
